@@ -1,0 +1,90 @@
+﻿@page "/"
+@using System.Globalization
+<RadzenCard Style="width: 100%">
+    <RadzenRow>
+
+        <RadzenColumn Size="12">
+            <RadzenText Text="Welcome To School System"></RadzenText>
+        </RadzenColumn>
+               
+        <RadzenColumn Size="4">
+            <RadzenCard Style="width: 100%">
+                <RadzenText Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+                Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."></RadzenText>
+            </RadzenCard>
+        </RadzenColumn>
+                
+        <RadzenColumn Size="4">
+            <RadzenCard Style="width: 100%" class=".rz-shadow-10">
+                <RadzenText Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
+                Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."></RadzenText>
+            </RadzenCard>
+        </RadzenColumn>
+               
+        <RadzenColumn Size="4">
+            <RadzenCard Style="width: 100%">
+                <RadzenText Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
+                Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."></RadzenText>
+            </RadzenCard>
+        </RadzenColumn>        
+        
+        <RadzenColumn Size="12">
+            <RadzenCard Style="width: 100%">
+                 <RadzenChart>
+                    <RadzenLineSeries Interpolation="@interpolation" Data="@students2023" CategoryProperty="Date" Title="2023" LineType="LineType.Dashed" ValueProperty="Revenue" />
+                    <RadzenAreaSeries Interpolation="@interpolation" Data="@students2024" CategoryProperty="Date" Title="2024" LineType="LineType.Dotted" ValueProperty="Revenue" />
+                     <RadzenCategoryAxis Padding="20" />
+                    <RadzenValueAxis>
+                        <RadzenGridLines Visible="true" />
+                        <RadzenAxisTitle Text="Number of Graduated Students" />
+                    </RadzenValueAxis>
+                 </RadzenChart>
+            </RadzenCard>
+        </RadzenColumn>
+
+    </RadzenRow>
+</RadzenCard>
+
+@code {
+    Interpolation interpolation = Interpolation.Line;
+
+    class DummyData
+    {
+        public string Date { get; set; }
+        public double Revenue { get; set; }
+    }
+
+    DummyData[] students2023 = new DummyData[] {
+    
+        new DummyData { Date = "Jan", Revenue = 0 },
+        new DummyData { Date = "Feb", Revenue = 40 },
+        new DummyData { Date = "Mar", Revenue = 60 },
+        new DummyData { Date = "Apr", Revenue = 80 },
+        new DummyData { Date = "May", Revenue = 100 },
+        new DummyData { Date = "Jun", Revenue = 180 },
+        new DummyData { Date = "Jul", Revenue = 140 },
+        new DummyData { Date = "Aug", Revenue = 160 },
+        new DummyData { Date = "Sept", Revenue = 180 },
+        new DummyData { Date = "Oct", Revenue = 200 },
+        new DummyData { Date = "Nov", Revenue = 220 },
+        new DummyData { Date = "Dec", Revenue = 240 }
+    };
+    DummyData[] students2024 = new DummyData[] {
+    
+        new DummyData { Date = "Jan", Revenue = 0 },
+        new DummyData { Date = "Feb", Revenue = 60 },
+        new DummyData { Date = "Mar", Revenue = 90 },
+        new DummyData { Date = "Apr", Revenue = 120 },
+        new DummyData { Date = "May", Revenue = 150 },
+        new DummyData { Date = "Jun", Revenue = 180 },
+        new DummyData { Date = "Jul", Revenue = 250 },
+        new DummyData { Date = "Aug", Revenue = 240 },
+        new DummyData { Date = "Sept", Revenue = 270 },
+        new DummyData { Date = "Oct", Revenue = 300 },
+        new DummyData { Date = "Nov", Revenue = 330 },
+        new DummyData { Date = "Dec", Revenue = 360 }
+    };
+};

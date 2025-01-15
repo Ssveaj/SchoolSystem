@@ -1,0 +1,6 @@
+@FileConversionMS_HostAddress = http://localhost:5133
+
+GET {{FileConversionMS_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,23 @@
+1. FileConversionMs
+   - Convert template to pdf - Done
+   - Three templates based on letter type - Done
+   - Replace with student name, student last name, and description - Done
+   - Pick up font for pdf files
+   - Add adress to pdf files
+
+2. StudentMs
+   - Create students - Done
+   - Get list of students - Done
+
+3. CourseMS
+   - Create course
+   - Assign to student
+   
+4. UI
+   - Fix templates design
+   - Landing page (Weatherapp ?)
+   - Navbar design
+
+
+
+

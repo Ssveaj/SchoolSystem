@@ -1,0 +1,38 @@
+﻿@inject StudentService StudentService
+
+<RadzenCard Style="width: 100%;" class="mt-4">
+    <RadzenFieldset Text="Students">
+        <RadzenDataGrid @ref="studentsGrid" AllowAlternatingRows="false" AllowFiltering="false" AllowPaging="true" PageSize="10" AllowSorting="false"
+                        Data="@students" TItem="GetListOfStudentRequestViewCoreModel"  ColumnWidth="200px">
+            <Columns>
+                <RadzenDataGridColumn TItem="GetListOfStudentRequestViewCoreModel" Property="FirstName" Title="First Name" />
+                <RadzenDataGridColumn TItem="GetListOfStudentRequestViewCoreModel" Property="LastName" Title="Last Name" />                
+                <RadzenDataGridColumn TItem="GetListOfStudentRequestViewCoreModel" Property="Address" Title="Address" />                    
+                <RadzenDataGridColumn TItem="GetListOfStudentRequestViewCoreModel" Property="Description" Title="Description" />
+                <RadzenDataGridColumn TItem="GetListOfStudentRequestViewCoreModel" Property="StudentInternalGuid" Title="StudentInternal Guid" />   
+                <RadzenDataGridColumn TItem="GetListOfStudentRequestViewCoreModel" Property="Created" Title="Created" />
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenFieldset>
+</RadzenCard>
+   
+@code {
+    List<GetListOfStudentRequestViewCoreModel> students = new List<GetListOfStudentRequestViewCoreModel>();
+    RadzenDataGrid<GetListOfStudentRequestViewCoreModel> studentsGrid;
+
+    public async Task ReloadComponentAsync()
+    {
+        await LoadStudentsAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    async Task LoadStudentsAsync()
+    {
+        students = await this.StudentService.GetListOfStudentAsync().ConfigureAwait(false);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStudentsAsync();
+    }
+}

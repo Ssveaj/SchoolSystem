@@ -1,0 +1,114 @@
+﻿@page "/studentletter"
+@inject LetterService LetterService
+@inject StudentService StudentService
+@inject IJSRuntime JsRuntime
+
+<div class="container-fluid">
+    <div class="row my-5">
+        <div class="col-lg-12">
+            <RadzenCard Style="width: 100%">
+                <RadzenFieldset Text="Manage letters">
+                    <RadzenTemplateForm TItem="CreateLetterRequestViewCoreModel" Data=@createStudentLetter Submit=@CreateLetterAsync>
+                          <RadzenRow>
+
+                              <RadzenColumn Size="6">
+                                <RadzenFormField Text="Student" Variant="Variant.Flat" Style="width: 100%;" class="mb-2">
+                                    <RadzenDropDown TValue="string"
+                                                    Placeholder="Choose student"
+                                                    Multiple="false"
+                                                    TextProperty="FirstName"
+                                                    ValueProperty="StudentInternalGuid"
+                                                    Data="students"
+                                                    AllowClear="false"
+                                                    @bind-Value="createStudentLetter.StudentInternalGuid" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+
+                            <RadzenColumn Size="6">
+                                <RadzenFormField Text="Letter Type" Variant="Variant.Flat" Style="width: 100%;" class="mb-2">
+                                    <RadzenDropDown TValue="LetterType"
+                                                    Placeholder="Choose letter type"
+                                                    Multiple="false"
+                                                    Data="letterType"
+                                                    AllowClear="false"
+                                                    @bind-Value="createStudentLetter.LetterType" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                            <RadzenColumn Size="12">
+                                @if (showDecriptionTextAreaBox.Contains(createStudentLetter.LetterType))
+                                {
+                                    <RadzenFormField Text="Reason" Variant="Variant.Flat" Style="width: 100%;" class="mb-2">
+                                        <RadzenTextBox @bind-Value="createStudentLetter.Description" />
+                                    </RadzenFormField>
+                                }
+                            </RadzenColumn>
+
+                        </RadzenRow>
+                        <RadzenButton ButtonType="ButtonType.Submit" Text="Generate Letter" Style="margin-top: 2rem;"></RadzenButton>
+                    </RadzenTemplateForm>
+                </RadzenFieldset>
+            </RadzenCard>
+            <LetterTableComponent @ref="LetterTableComponent" />
+        </div>
+    </div>
+</div>
+
+@code {
+    CreateLetterRequestViewCoreModel createStudentLetter = new CreateLetterRequestViewCoreModel();
+    List<GetListOfStudentRequestViewCoreModel> students = new List<GetListOfStudentRequestViewCoreModel>();
+    List<LetterType> letterType = new List<LetterType> { LetterType.Suspended, LetterType.Warning, LetterType.Diploma };
+    List<LetterType> showDecriptionTextAreaBox = new List<LetterType> { LetterType.Suspended, LetterType.Warning };
+    protected LetterTableComponent LetterTableComponent;
+    async Task CreateLetterAsync()
+    {
+
+        var student = students.FirstOrDefault(x => x.StudentInternalGuid == createStudentLetter.StudentInternalGuid);
+        if (student is null)
+        {
+            await IJSRuntimeExtensions.DisplayMessage(JsRuntime, "Failed!", "The student can not be found", IJSRuntimeExtensions.SweetAlertMessageType.error);
+            return;
+        }
+
+        var createLetterRequestViewModel = new CreateLetterRequestViewCoreModel
+        {
+            StudentName = student.FirstName,
+            StudentLastName = student.LastName,
+            StudentInternalGuid = createStudentLetter.StudentInternalGuid,
+            LetterType = createStudentLetter.LetterType,
+            Description = createStudentLetter.Description,
+        };
+
+        var letterResult = await LetterService.CreateLetterAsync(createLetterRequestViewModel).ConfigureAwait(false);
+        if(!letterResult.Success)
+        {
+            var message = letterResult.Errors.Select(x => x.Message).FirstOrDefault() ?? "";
+            await IJSRuntimeExtensions.DisplayMessage(JsRuntime, "Failed!", $"{message}", IJSRuntimeExtensions.SweetAlertMessageType.error);
+            return;
+        }
+        await IJSRuntimeExtensions.DisplayMessage(JsRuntime, "Saved!", $"The letter has been created", IJSRuntimeExtensions.SweetAlertMessageType.success);
+        await ResetFieldAsync();
+        await ReloadLetterFileTableComponentAsync();
+    }
+
+    async Task ResetFieldAsync()
+    {
+        createStudentLetter.StudentName = "";
+        createStudentLetter.StudentLastName = "";
+        createStudentLetter.Description = "";
+    }
+
+    async Task ReloadLetterFileTableComponentAsync()
+    {
+        await LetterTableComponent.ReloadComponentAsync();
+    }  
+
+    async Task LoadStudentsAsync()
+    {
+        students = await StudentService.GetListOfStudentAsync().ConfigureAwait(false);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStudentsAsync();
+    }
+}

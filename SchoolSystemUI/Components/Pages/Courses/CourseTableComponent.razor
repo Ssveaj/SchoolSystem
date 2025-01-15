@@ -1,0 +1,48 @@
+﻿@inject CourseService CourseService
+
+<RadzenCard Style="width: 100%;" class="mt-4">
+    <RadzenFieldset Text="Courses">
+        <RadzenDataGrid @ref="coursesGrid" AllowAlternatingRows="false" AllowFiltering="false" AllowPaging="true" PageSize="10" AllowSorting="false"
+                        Data="@courses" TItem="GetListOfCourseRequestViewCoreModel" ColumnWidth="200px">
+            
+            <Columns>
+                <RadzenDataGridColumn TItem="GetListOfCourseRequestViewCoreModel" Property="CourseName" Title="Course Name" />
+                <RadzenDataGridColumn TItem="GetListOfCourseRequestViewCoreModel" Property="Created" Title="Created" />
+                <RadzenDataGridColumn TItem="GetListOfCourseRequestViewCoreModel" Property="CourseInternalGuid" Title="CourseInternal Guid" />
+            </Columns>
+            <Template Context="coursestudent">
+                <RadzenTabs>
+                    <Tabs>
+                        <RadzenDataGrid AllowFiltering="false" AllowPaging="true" AllowSorting="false" Data="coursestudent.Students" TItem="GetListOfStudentCourseRequestViewCoreModel" Style="margin: 20px 20px 20px 20px;">
+                            <Columns>
+                                <RadzenDataGridColumn TItem="GetListOfStudentCourseRequestViewCoreModel" Property="StudentName" Title="Student Name" />
+                                <RadzenDataGridColumn TItem="GetListOfStudentCourseRequestViewCoreModel" Property="StudentInternalGuid" Title="StudentInternal Guid" />
+                            </Columns>
+                        </RadzenDataGrid>
+                    </Tabs>
+                </RadzenTabs>
+            </Template>
+        </RadzenDataGrid>
+    </RadzenFieldset>
+</RadzenCard>
+
+@code {
+    List<GetListOfCourseRequestViewCoreModel> courses = new List<GetListOfCourseRequestViewCoreModel>();
+    RadzenDataGrid<GetListOfCourseRequestViewCoreModel> coursesGrid;
+
+    public async Task ReloadComponentAsync()
+    {
+        await LoadCoursesAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    async Task LoadCoursesAsync()
+    {
+        courses = await this.CourseService.GetListOfCourseAsync().ConfigureAwait(false);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCoursesAsync();
+    }
+}

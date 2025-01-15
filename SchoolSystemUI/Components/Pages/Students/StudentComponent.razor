@@ -1,0 +1,80 @@
+﻿@page "/student"
+@inject StudentService StudentService
+@inject IJSRuntime JsRuntime
+
+
+<div class="container-fluid">
+    <div class="row my-5 d-flex">
+        <div class="col-lg-12">
+            <RadzenCard Style="width: 100%">
+                <RadzenFieldset Text="Manage student">
+                    <RadzenTemplateForm TItem="CreateStudentRequestViewCoreModel" Data=@addNewStudent Submit=@CreateStudentAsync>
+                        
+                        <RadzenRow>
+
+                            <RadzenColumn Size="6"> 
+                                <RadzenFormField Text="Student Name" Variant="Variant.Flat" Style="width: 100%;" class="mb-2">
+                                    <RadzenTextBox @bind-Value="addNewStudent.StudentName" />
+                                </RadzenFormField>
+                            </RadzenColumn>       
+                            
+                            <RadzenColumn Size="6">
+                                <RadzenFormField Text="Student Last Name" Variant="Variant.Flat" Style="width: 100%;" class="mb-2">
+                                    <RadzenTextBox @bind-Value="addNewStudent.StudentLastName" />
+                                </RadzenFormField>
+                            </RadzenColumn>                            
+                            
+                            <RadzenColumn Size="6">
+                                <RadzenFormField Text="Address" Variant="Variant.Flat" Style="width: 100%;" class="mb-2">
+                                    <RadzenTextBox @bind-Value="addNewStudent.Address" />
+                                </RadzenFormField>
+                            </RadzenColumn>                           
+                            
+                            <RadzenColumn Size="6">
+                                <RadzenFormField Text="Description" Variant="Variant.Flat" Style="width: 100%;" class="mb-2">
+                                    <RadzenTextBox @bind-Value="addNewStudent.Description" />
+                                </RadzenFormField>
+                            </RadzenColumn>
+                        
+                        </RadzenRow>
+
+                        <RadzenButton ButtonType="ButtonType.Submit" Style="margin-top: 2rem;" Text="Add New Student"></RadzenButton>
+                    </RadzenTemplateForm>
+                </RadzenFieldset>
+            </RadzenCard>
+            <StudentTableComponent @ref="StudentTableComponent" />
+        </div>
+    </div>
+</div>
+
+@code {
+    CreateStudentRequestViewCoreModel addNewStudent = new CreateStudentRequestViewCoreModel();
+    protected StudentTableComponent StudentTableComponent;
+
+    async Task CreateStudentAsync()
+    {
+        var studentResult = await this.StudentService.CreateStudentAsync(addNewStudent).ConfigureAwait(false);
+        if (!studentResult.Success)
+        {
+            var message = studentResult.Errors.Select(x => x.Message).FirstOrDefault() ?? "";
+            await IJSRuntimeExtensions.DisplayMessage(JsRuntime, "Failed!", $"{message}", IJSRuntimeExtensions.SweetAlertMessageType.error);
+            return;
+        }
+        await IJSRuntimeExtensions.DisplayMessage(JsRuntime, "Saved!", $"The student {addNewStudent.StudentName + " " + addNewStudent.StudentLastName} has been created.", IJSRuntimeExtensions.SweetAlertMessageType.success);
+        await ResetFieldAsync();
+        await ReloadStudentTableComponentAsync();
+    }
+
+    async Task ResetFieldAsync()
+    {
+        addNewStudent.StudentName = "";
+        addNewStudent.StudentLastName = "";
+        addNewStudent.Description = "";
+        addNewStudent.Address = "";
+    }
+
+    async Task ReloadStudentTableComponentAsync()
+    {
+        await StudentTableComponent.ReloadComponentAsync();
+    }
+}

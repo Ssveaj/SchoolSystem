@@ -1,0 +1,48 @@
+﻿@inject LetterService LetterService
+@inject IJSRuntime IJSRuntime
+@inject JSInteropHelper JSInterop
+
+<RadzenCard Style="width: 100%;" class="mt-4">
+    <RadzenFieldset Text="Letter files">
+        <RadzenDataGrid @ref="letterFilesGrid" AllowAlternatingRows="false" AllowFiltering="false" AllowPaging="true" PageSize="10" AllowSorting="false"
+                        Data="@letterFiles" TItem="GetListOfLetterFilesRequestViewCoreModel" ColumnWidth="200px">
+            <Columns>
+                <RadzenDataGridColumn TItem="GetListOfLetterFilesRequestViewCoreModel" Property="FileName" Title="FileName" />
+                <RadzenDataGridColumn TItem="GetListOfLetterFilesRequestViewCoreModel" Property="Created" Title="Created" />
+                <RadzenDataGridColumn TItem="GetListOfLetterFilesRequestViewCoreModel" Property="StudentExternalGuid" Title="StudentExternal Guid" />
+                <RadzenDataGridColumn TItem="GetListOfLetterFilesRequestViewCoreModel" Title="Download" Filterable=false>
+                    <Template Context="data">
+                        <RadzenButton Icon="download" Click="@(args => OpenTheFileAsync(data.File))" />
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenFieldset>
+</RadzenCard>
+
+
+
+@code {
+    List<GetListOfLetterFilesRequestViewCoreModel> letterFiles = new List<GetListOfLetterFilesRequestViewCoreModel>();
+    RadzenDataGrid<GetListOfLetterFilesRequestViewCoreModel> letterFilesGrid;
+
+    public async Task ReloadComponentAsync()
+    {
+        await LoadLetterFilesAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+    async Task LoadLetterFilesAsync()
+    {
+        letterFiles = await this.LetterService.GetListOfLetterFiles().ConfigureAwait(false);
+    }
+
+    async Task OpenTheFileAsync(byte[] file)
+    {
+        await JSInterop.OpenPdfFileAsync(file).ConfigureAwait(false);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLetterFilesAsync();
+    }
+}

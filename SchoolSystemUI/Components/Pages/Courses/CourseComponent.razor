@@ -1,0 +1,159 @@
+﻿@page "/course"
+@inject CourseService CourseService
+@inject StudentService StudentService
+@inject IJSRuntime JsRuntime
+
+<div class="container-fluid">
+    <div class="row my-5 d-flex">
+        <div class="col-lg-12">
+            <RadzenCard Style="width: 100%">
+                <RadzenFieldset Text="Manage course">
+                 <RadzenTabs TabPosition="@TabPosition.Top" RenderMode="TabRenderMode.Client">
+                    <Tabs> 
+                        <RadzenTabsItem Text="Create course">
+                            <RadzenTemplateForm TItem="CreateCourseRequestViewCoreModel" Data=@addNewCourse Submit=@CreateCourseAsync>
+                                <RadzenRow>
+                                    <RadzenColumn Size="6">
+                                        <RadzenFormField Text="Course Name" Variant="Variant.Flat" Style="width: 100%;" class="mb-2">
+                                            <RadzenTextBox @bind-Value="addNewCourse.CourseName" />
+                                        </RadzenFormField>
+                                    </RadzenColumn>
+                                </RadzenRow>
+                                <RadzenButton ButtonType="ButtonType.Submit" Style="margin-top: 2rem;" Text="Add New Course"></RadzenButton>
+                            </RadzenTemplateForm>
+                        </RadzenTabsItem>
+                        <RadzenTabsItem Text="Add students to course">
+                                <RadzenRow>
+                                    <RadzenColumn Size="6" class="mb-2">
+                                        <RadzenDropDown @bind-Value="addStudentCourse.CourseInternalGuid"                
+                                                        Placeholder="Choose course"
+                                                        Data=@courses
+                                                            FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                                            FilterOperator="StringFilterOperator.Contains"
+                                                            AllowVirtualization="true"
+                                                            AllowClear="false"
+                                                            AllowFiltering="true"
+                                                            TextProperty="CourseName"
+                                                            ValueProperty="CourseInternalGuid"
+                                                            Style="width: 100%; display: block;" />
+
+                                    </RadzenColumn>
+                                </RadzenRow>
+
+                                <RadzenDataGrid @ref="studentsGrid" AllowRowSelectOnRowClick="true" AllowFiltering="true" FilterPopupRenderMode="PopupRenderMode.OnDemand" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                                AllowPaging="true" PageSize="10"
+                                                AllowSorting="true" Data="@students" ColumnWidth="200px"
+                                                SelectionMode="DataGridSelectionMode.Multiple" @bind-Value=@selectedStudents>
+                                    <Columns>
+
+                                        <RadzenDataGridColumn Width="60px" Sortable="false" Filterable="false">
+                                            <HeaderTemplate>
+                                                <RadzenCheckBox TabIndex="-1" TriState="false" TValue="bool?" InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "Select all items" }})"
+                                                                Value="@(selectedStudents == null || selectedStudents?.Any() != true ? false : !students.All(i => selectedStudents.Contains(i)) ? null : students.Any(i => selectedStudents.Contains(i)))"
+                                                                Change="@(args => selectedStudents = args == true ? students.ToList() : null)" />
+                                            </HeaderTemplate>
+                                            <Template Context="data">
+                                                <RadzenCheckBox TabIndex="-1" TriState="false" Value="@(selectedStudents != null && selectedStudents.Contains(data))" InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "Select item" }})"
+                                                                TValue="bool" Change=@(args => { if(!true) { studentsGrid.SelectRow(data); }}) />
+                                            </Template>
+                                        </RadzenDataGridColumn>
+
+                                        <RadzenDataGridColumn TItem="GetListOfStudentRequestViewCoreModel" Property="FirstName" Title="First name" />
+                                        <RadzenDataGridColumn TItem="GetListOfStudentRequestViewCoreModel" Property="LastName" Title="Last name" />
+                                        <RadzenDataGridColumn TItem="GetListOfStudentRequestViewCoreModel" Property="Address" Title="Address" />
+                                        <RadzenDataGridColumn TItem="GetListOfStudentRequestViewCoreModel" Property="Created" Title="Created" />
+                                        <RadzenDataGridColumn TItem="GetListOfStudentRequestViewCoreModel" Property="StudentInternalGuid" Title="StudentInternal Guid" />
+                                    </Columns>
+
+                                </RadzenDataGrid>
+                                <RadzenButton ButtonType="ButtonType.Submit" Click="() => SelectedStudentsAsync(selectedStudents)" Style="margin-top: 2rem;" Text="Add Student"></RadzenButton>
+                        </RadzenTabsItem>
+                        </Tabs>
+                    </RadzenTabs>
+
+                </RadzenFieldset>
+            </RadzenCard>
+            <CourseTableComponent @ref="CourseTableComponent" />
+        </div>
+    </div>
+</div>
+
+@code {
+    protected CourseTableComponent CourseTableComponent;
+    CreateCourseRequestViewCoreModel addNewCourse = new CreateCourseRequestViewCoreModel();        
+    List<GetListOfStudentRequestViewCoreModel> students = new List<GetListOfStudentRequestViewCoreModel>();
+    RadzenDataGrid<GetListOfStudentRequestViewCoreModel> studentsGrid;
+    IList<GetListOfStudentRequestViewCoreModel> selectedStudents;    
+    List<GetListOfCourseRequestViewCoreModel> courses = new List<GetListOfCourseRequestViewCoreModel>();
+
+    CreateStudentCourseRequestViewCoreModel addStudentCourse = new CreateStudentCourseRequestViewCoreModel();
+    List<StudentCourseRequestViewCoreModel> addStudents = new List<StudentCourseRequestViewCoreModel>();
+
+    async Task SelectedStudentsAsync(IList<GetListOfStudentRequestViewCoreModel> selectedStudents)
+    {
+        if (!selectedStudents.Any())
+        {
+            await IJSRuntimeExtensions.DisplayMessage(JsRuntime, "Failed!", "Student can not be empty!", IJSRuntimeExtensions.SweetAlertMessageType.error);
+            return;
+        }  
+
+        var newStudentCourse = new CreateStudentCourseRequestViewCoreModel
+        {
+                CourseInternalGuid = addStudentCourse.CourseInternalGuid,
+                Students = selectedStudents.Select(x => new StudentCourseRequestViewCoreModel
+                {
+                    StudentInternalGuid = x.StudentInternalGuid,
+                    StudentName = x.FirstName + " " + x.LastName,
+                }).ToList(),
+        };
+
+        var courseStudentresult = await CourseService.AddStudentsToCourse(newStudentCourse).ConfigureAwait(false);
+        if (!courseStudentresult.Success)
+        {
+            var message = courseStudentresult!.Errors!.Select(x => x.Message).FirstOrDefault() ?? "";
+            await IJSRuntimeExtensions.DisplayMessage(JsRuntime, "Failed!", $"{message}", IJSRuntimeExtensions.SweetAlertMessageType.error);
+            return;
+        }
+
+        await IJSRuntimeExtensions.DisplayMessage(JsRuntime, "Saved!", "The course has been successfully updated.", IJSRuntimeExtensions.SweetAlertMessageType.success);
+    }
+
+    async Task CreateCourseAsync()
+    {
+        var courseResult = await this.CourseService.CreateCourseAsync(addNewCourse).ConfigureAwait(false);
+        if (!courseResult.Success)
+        {
+            var message = courseResult.Errors.Select(x => x.Message).FirstOrDefault() ?? "";
+            await IJSRuntimeExtensions.DisplayMessage(JsRuntime, "Failed!", $"{message}", IJSRuntimeExtensions.SweetAlertMessageType.error);
+            return;
+        }
+        await IJSRuntimeExtensions.DisplayMessage(JsRuntime, "Saved!", $"The course {addNewCourse.CourseName} has been created.", IJSRuntimeExtensions.SweetAlertMessageType.success);
+        await ResetFieldAsync();
+        await ReloadCourseTableComponentAsync();
+    }
+
+    async Task ResetFieldAsync()
+    {
+        addNewCourse.CourseName = "";
+    }
+
+    async Task LoadStudentsAsync()
+    {
+        students = await this.StudentService.GetListOfStudentAsync().ConfigureAwait(false);
+    }    
+    
+    async Task LoadCoursesAsync()
+    {
+        courses = await this.CourseService.GetListOfCourseAsync().ConfigureAwait(false);
+    }
+
+    async Task ReloadCourseTableComponentAsync()
+    {
+        await CourseTableComponent.ReloadComponentAsync();
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStudentsAsync();
+        await LoadCoursesAsync();
+    }
+}
