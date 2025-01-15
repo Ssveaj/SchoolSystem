@@ -1,0 +1,1 @@
+Jag skapade ett spontant projekt med Blazor och Radzen som en frontend-lösning, där applikationen hämtar data från tre olika mikrotjänster via endpoints. Mikrotjänsterna utvecklades som vanliga .NET Core-projekt och integrerades för att leverera en robust och flexibel datadriven applikation.
